@@ -1,0 +1,26 @@
+:root {
+  --md-primary-fg-color: #4051b5;
+  --md-primary-fg-color--light: #757de8;
+  --md-primary-fg-color--dark: #002984;
+  --md-accent-fg-color: #4051b5;
+}
+
+.md-typeset h1 {
+  font-weight: 600;
+}
+
+.md-typeset h2 {
+  font-weight: 500;
+}
+
+.md-typeset h3 {
+  font-weight: 500;
+}
+
+.md-nav__title {
+  font-weight: 600;
+}
+
+.highlight .hll {
+  background-color: rgba(64, 81, 181, 0.1);
+}

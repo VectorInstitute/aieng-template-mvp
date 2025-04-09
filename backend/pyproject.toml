@@ -1,0 +1,64 @@
+[project]
+name = "mvp-backend"
+version = "0.1.0"
+description = "MVP Backend API"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+packages = ["api", "services"]
+
+[dependency-groups]
+dev = [
+    "codecov>=2.1.13",
+    "mypy>=1.14.1",
+    "nbqa>=1.9.1",
+    "pip-audit>=2.7.3",
+    "pre-commit>=4.1.0",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.2",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "ruff>=0.9.2",
+]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.15",
+    "mkdocstrings>=0.24.1",
+    "mkdocstrings-python>=1.10.0",
+    "ipykernel>=6.29.5",
+    "ipython>=8.31.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.12"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,42 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - FRONTEND_PORT=${FRONTEND_PORT}
+        - BACKEND_PORT=${BACKEND_PORT}
+        - BACKEND_HOST=${BACKEND_HOST}
+    image: ${PROJECT_NAME:-mvp}:frontend-${BUILD_ID:-latest}
+    env_file: .env.production
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    environment:
+      - NEXT_PUBLIC_BACKEND_HOST=${BACKEND_HOST}
+      - NEXT_PUBLIC_BACKEND_PORT=${BACKEND_PORT}
+      - NEXT_PUBLIC_FRONTEND_PORT=${FRONTEND_PORT}
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - BACKEND_PORT=${BACKEND_PORT}
+        - FRONTEND_PORT=${FRONTEND_PORT}
+    image: ${PROJECT_NAME:-mvp}:backend-${BUILD_ID:-latest}
+    env_file: .env.production
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    environment:
+      - BACKEND_PORT=${BACKEND_PORT}
+      - FRONTEND_PORT=${FRONTEND_PORT}
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

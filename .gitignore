@@ -31,6 +31,12 @@ venv.bak/
 /out/
 /build
 /dist
+/site/
+/combined_site/
+frontend/out/
+*/out/
+tmp_next_out/
+docs/assets/template-ui/
 
 # Environment files
 .env.local

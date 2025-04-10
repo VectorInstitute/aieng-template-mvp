@@ -7,7 +7,12 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'vector-pink': '#eb088a',
+        'vector-purple': '#8a08eb',
+      },
+    },
   },
   plugins: [],
 };

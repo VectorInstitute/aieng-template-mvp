@@ -34,6 +34,7 @@ nav:
   - Backend Development: backend-development.md
   - Frontend Development: frontend-development.md
   - Docker and Deployment: docker-deployment.md
+  - Template UI: template-preview.md
 plugins:
   - search
   - include-markdown

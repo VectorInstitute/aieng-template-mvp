@@ -79,6 +79,7 @@ jobs:
       - name: Build docs using build-docs.sh
         run: |
           chmod +x build-docs.sh
+          source backend/.venv/bin/activate
           ./build-docs.sh
 
       - name: Upload artifact

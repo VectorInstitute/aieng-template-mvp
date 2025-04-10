@@ -56,18 +56,30 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
 
-      - name: Install mkdocs dependencies
+      - name: Install frontend dependencies
         run: |
-          pip install mkdocs-material mkdocs-include-markdown-plugin
-          pip install pymdown-extensions
+          cd frontend
+          npm ci
+          cd ..
 
-      - name: Build docs
+      - name: Install mkdocs dependencies from backend pyproject.toml
         run: |
-          mkdocs build
+          cd backend
+          uv sync --dev
+          cd ..
 
-      - name: Create .nojekyll file
-        run: touch site/.nojekyll
+      - name: Build docs using build-docs.sh
+        run: |
+          chmod +x build-docs.sh
+          ./build-docs.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

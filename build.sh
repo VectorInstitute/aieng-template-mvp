@@ -1,32 +1,62 @@
 #!/bin/bash
-
-# Build script for deploying the MVP application
-
 set -e
 
-# Set environment variables
-BUILD_ID=$(date +%Y%m%d%H%M%S)
-export BUILD_ID
+# Build MkDocs site
+echo "Building MkDocs site..."
+mkdocs build
 
-# Load environment variables
-if [ "$ENVIRONMENT" == "production" ]; then
-  echo "Building for production..."
-  ENV_FILE=".env.production"
-  DOCKER_COMPOSE_FILE="docker-compose.yml"
-else
-  echo "Building for development..."
-  ENV_FILE=".env.development"
-  DOCKER_COMPOSE_FILE="docker-compose.dev.yml"
-fi
+# Build frontend as static site
+echo "Building Next.js frontend..."
+cd frontend
+npm install
+npm run build
+cd ..
 
-# Build the application
-echo "Building application using $DOCKER_COMPOSE_FILE..."
-docker compose --env-file "$ENV_FILE" -f "$DOCKER_COMPOSE_FILE" build
+# Move Next.js output to a temporary directory
+echo "Preparing to merge sites..."
+mkdir -p tmp_next_out
+cp -r frontend/out/* tmp_next_out/
 
-# Optional: Push to a container registry
-# if [ "$PUSH_TO_REGISTRY" == "true" ]; then
-#   echo "Pushing images to registry..."
-#   docker compose -f "$DOCKER_COMPOSE_FILE" push
-# fi
+# Create the combined site directory
+echo "Creating combined site..."
+mkdir -p combined_site
 
-echo "Build completed successfully!"
+# Copy MkDocs site to combined site
+cp -r site/* combined_site/
+
+# Create app directory in the combined site and copy Next.js output there
+mkdir -p combined_site/app
+cp -r tmp_next_out/* combined_site/app/
+
+# Create redirect from root to app
+cat > combined_site/index.html <<EOL
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="refresh" content="0; url='app/'" />
+  <title>Vector Institute AI Engineering</title>
+</head>
+<body>
+  <p>Redirecting to <a href="app/">Vector AI Engineering Template</a></p>
+</body>
+</html>
+EOL
+
+# Create navigation helper in the docs to app
+cat > combined_site/to_app.html <<EOL
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="refresh" content="0; url='app/'" />
+  <title>Vector Institute AI Engineering</title>
+</head>
+<body>
+  <p>Redirecting to <a href="app/">Vector AI Engineering Template</a></p>
+</body>
+</html>
+EOL
+
+# Clean up temp directory
+rm -rf tmp_next_out
+
+echo "Build complete! Combined site is in the 'combined_site' directory."

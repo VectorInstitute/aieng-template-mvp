@@ -1,19 +1,37 @@
-import Link from 'next/link'
+'use client';
 
-export default function Header() {
+import React, { memo } from 'react';
+import { Box, Flex, Container, Image, useBreakpointValue } from '@chakra-ui/react'
+import NextLink from 'next/link'
+
+const Header: React.FC = () => {
+  const logoSize = useBreakpointValue({ base: "80px", md: "100px" })
+
   return (
-    <header className="w-full">
-      <nav className="flex justify-between items-center py-4">
-        <Link href="/" className="font-bold text-xl">AI MVP</Link>
-        <div className="flex items-center gap-6">
-          <Link href="https://nextjs.org/docs" className="hover:underline" target="_blank">
-            Next.js Docs
-          </Link>
-          <Link href="https://fastapi.tiangolo.com" className="hover:underline" target="_blank">
-            FastAPI Docs
-          </Link>
-        </div>
-      </nav>
-    </header>
+    <Box as="header" position="relative" top={0} left={0} right={0} zIndex={10} bg="white" borderBottom="1px" borderColor="gray.200">
+      <Container maxW="1200px">
+        <Flex justify="flex-start" align="center" py={2}>
+          <Box
+            width={logoSize}
+            height="30px"
+            position="relative"
+            cursor="pointer"
+          >
+            <NextLink href="/" passHref>
+              <Image
+                src="/images/vector-logo.png"
+                alt="Vector Institute"
+                objectFit="contain"
+                width="100%"
+                height="100%"
+                fallbackSrc="https://via.placeholder.com/150x40?text=Vector+Institute"
+              />
+            </NextLink>
+          </Box>
+        </Flex>
+      </Container>
+    </Box>
   )
 }
+
+export default memo(Header);

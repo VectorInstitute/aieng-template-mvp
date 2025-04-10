@@ -19,14 +19,14 @@ function openTemplateUI() {
   const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -2).join('/');
   // Create template URL relative to the current page
   const templateUrl = baseUrl + '/assets/template-ui/';
-  
+
   // Make iframe taller for better visibility
   document.getElementById('template-preview').style.height = '700px';
-  
+
   // Option 1: Open in iframe
   document.getElementById('template-preview').src = templateUrl;
   document.getElementById('template-preview').style.display = 'block';
-  
+
   // Option 2: Open in new tab
   // window.open(templateUrl, '_blank');
 }

@@ -22,10 +22,10 @@ The template follows a microservices architecture with two main components:
 
 ## Getting Started
 
-To start using this template, see the [Getting Started](/getting-started) guide.
+To start using this template, see the [Getting Started](getting-started.md) guide.
 
 ## Development Guides
 
-- [Backend Development](/backend-development)
-- [Frontend Development](/frontend-development)
-- [Docker and Deployment](/docker-deployment)
+- [Backend Development](backend-development.md)
+- [Frontend Development](frontend-development.md)
+- [Docker and Deployment](docker-deployment.md)

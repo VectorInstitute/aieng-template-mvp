@@ -81,4 +81,4 @@ Once you have the template set up, you can start customizing it for your specifi
 3. Add your business logic to the backend services
 4. Set up your CI/CD pipeline
 
-See the [Backend Development](/backend-development) and [Frontend Development](/frontend-development) guides for more details.
+See the [Backend Development](backend-development.md) and [Frontend Development](frontend-development.md) guides for more details.

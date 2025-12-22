@@ -12,6 +12,12 @@ updates:
 
   # Keep uv dependencies (uv.lock) up to date
   - package-ecosystem: "uv"
-    directory: "/"          # where pyproject.toml and uv.lock live
+    directory: "backend/"          # where pyproject.toml and uv.lock live
+    schedule:
+      interval: "weekly"
+
+  # Keep npm dependencies (package-lock.json) up to date
+  - package-ecosystem: "npm"
+    directory: "frontend/"          # where package.json and package-lock.json live
     schedule:
       interval: "weekly"

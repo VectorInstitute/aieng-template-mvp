@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
-    "@chakra-ui/react": "^2.8.2",
+    "@chakra-ui/react": "^3.30.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "framer-motion": "^11.5.4",
@@ -21,7 +21,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^25",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",

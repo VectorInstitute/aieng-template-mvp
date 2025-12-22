@@ -4,8 +4,8 @@ import React, { memo } from 'react';
 import { Box, Container, Heading, Text, VStack, useBreakpointValue } from '@chakra-ui/react'
 
 const Hero: React.FC = () => {
-  const headingSize = useBreakpointValue({ base: "xl", md: "2xl", lg: "3xl" });
-  const textSize = useBreakpointValue({ base: "sm", md: "md", lg: "lg" });
+  const headingSize = useBreakpointValue({ base: "xl", md: "2xl", lg: "3xl" }) as "xl" | "2xl" | "3xl";
+  const textSize = useBreakpointValue({ base: "sm", md: "md", lg: "lg" }) as "sm" | "md" | "lg";
 
   return (
     <Box
@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
     >
       <Container maxW="1200px">
         <VStack
-          spacing={4}
+          gap={4}
           alignItems="center"
           justifyContent="center"
           textAlign="center"

@@ -1,23 +1,25 @@
 'use client';
 
-import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 
-const theme = extendTheme({
-  colors: {
-    brand: {
-      pink: '#eb088a',
-      purple: '#8a08eb',
+const system = createSystem(defaultConfig, {
+  theme: {
+    tokens: {
+      colors: {
+        brand: {
+          pink: { value: '#eb088a' },
+          purple: { value: '#8a08eb' },
+        },
+      },
     },
   },
-  styles: {
-    global: {
-      body: {
-        bg: 'white',
-      },
+  globalCss: {
+    'body': {
+      bg: 'white',
     },
   },
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <ChakraProvider theme={theme}>{children}</ChakraProvider>;
+  return <ChakraProvider value={system}>{children}</ChakraProvider>;
 }

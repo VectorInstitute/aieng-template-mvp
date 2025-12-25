@@ -1,35 +1,27 @@
 'use client';
 
 import React, { memo } from 'react';
-import { Box, Flex, Container, Image, useBreakpointValue } from '@chakra-ui/react'
 import NextLink from 'next/link'
+import Image from 'next/image'
 
 const Header: React.FC = () => {
-  const logoSize = useBreakpointValue({ base: "80px", md: "100px" }) as string
-
   return (
-    <Box as="header" position="relative" top={0} left={0} right={0} zIndex={10} bg="white" borderBottom="1px" borderColor="gray.200">
-      <Container maxW="1200px">
-        <Flex justify="flex-start" align="center" py={2}>
-          <Box
-            width={logoSize}
-            height="30px"
-            position="relative"
-            cursor="pointer"
-          >
-            <NextLink href="/" passHref>
+    <header className="relative top-0 left-0 right-0 z-10 bg-white border-b border-gray-200">
+      <div className="max-w-[1200px] mx-auto px-4">
+        <div className="flex justify-start items-center py-2">
+          <div className="w-20 md:w-[100px] h-[30px] relative cursor-pointer">
+            <NextLink href="/">
               <Image
                 src="/images/vector-logo.png"
                 alt="Vector Institute"
-                objectFit="contain"
-                width="100%"
-                height="100%"
+                fill
+                style={{ objectFit: 'contain' }}
               />
             </NextLink>
-          </Box>
-        </Flex>
-      </Container>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </header>
   )
 }
 

@@ -15,14 +15,6 @@ const nextConfig = {
       },
     ]
   },
-  serverRuntimeConfig: {
-    backendHost: process.env.NEXT_PUBLIC_BACKEND_HOST || 'localhost',
-    backendPort: process.env.NEXT_PUBLIC_BACKEND_PORT || '8000',
-  },
-  publicRuntimeConfig: {
-    backendHost: process.env.NEXT_PUBLIC_BACKEND_HOST || 'localhost',
-    backendPort: process.env.NEXT_PUBLIC_BACKEND_PORT || '8000',
-  },
 };
 
 // Handle rewrites differently for static export

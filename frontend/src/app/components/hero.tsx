@@ -1,35 +1,24 @@
 'use client';
 
 import React, { memo } from 'react';
-import { Box, Container, Heading, Text, VStack, useBreakpointValue } from '@chakra-ui/react'
 
 const Hero: React.FC = () => {
-  const headingSize = useBreakpointValue({ base: "xl", md: "2xl", lg: "3xl" }) as "xl" | "2xl" | "3xl";
-  const textSize = useBreakpointValue({ base: "sm", md: "md", lg: "lg" }) as "sm" | "md" | "lg";
-
   return (
-    <Box
-      bgGradient="linear(to-r, brand.pink, brand.purple)"
-      position="relative"
-      py={{ base: "40px", md: "60px" }}
-      mt="1px" // Add a tiny margin to ensure no gap with header
+    <div
+      className="relative py-10 md:py-15 mt-[1px]"
+      style={{ background: 'linear-gradient(to right, #eb088a, #8a08eb)' }}
     >
-      <Container maxW="1200px">
-        <VStack
-          gap={4}
-          alignItems="center"
-          justifyContent="center"
-          textAlign="center"
-        >
-          <Heading as="h1" size={headingSize} color="white" fontWeight="bold">
+      <div className="max-w-[1200px] mx-auto px-4">
+        <div className="flex flex-col gap-4 items-center justify-center text-center">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl text-white font-bold">
             AI Engineering MVP Template
-          </Heading>
-          <Text fontSize={textSize} color="white" maxW="700px">
+          </h1>
+          <p className="text-sm md:text-base lg:text-lg text-white max-w-[700px]">
             A starter template for building AI-powered applications with Vector Institute branding.
-          </Text>
-        </VStack>
-      </Container>
-    </Box>
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }
 

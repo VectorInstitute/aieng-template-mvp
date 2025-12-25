@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
@@ -21,11 +21,12 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
     "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.0.1",
-    "eslint": "^8",
+    "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "postcss": "^8",
     "tailwindcss": "^4.1.18",

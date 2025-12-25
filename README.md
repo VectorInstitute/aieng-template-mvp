@@ -66,13 +66,16 @@ professional, production-ready foundation.
 
 ### 1. Configure Environment Variables
 
-Copy the `.env.example` file to `.env.development`:
+Copy the `.env.example` file to both `.env.development` and `.env`:
 
 ```bash
 cp .env.example .env.development
+cp .env.example .env
 ```
 
-Edit the file to add your specific API keys and configuration.
+The `.env` file is used by Docker Compose for variable substitution in the compose files. The `.env.development` file can be used for any additional environment-specific configuration.
+
+Edit these files to add your specific API keys and configuration.
 
 ### 2. Update Project Information
 
@@ -94,19 +97,65 @@ The frontend uses Next.js App Router architecture:
 - Define types in `frontend/src/app/types/`
 - Manage state with Zustand in `frontend/src/app/stores/`
 
-## 🚢 Deployment
+## 🚢 Running the Application
 
 ### Development
 
+Start the development environment:
+
 ```bash
-docker compose --env-file .env.development -f docker-compose.dev.yml up
+docker compose -f docker-compose.dev.yml up
+```
+
+Or rebuild containers (needed after dependency changes):
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+The application will be available at:
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- Backend API docs: http://localhost:8000/docs
+
+To stop the containers:
+
+```bash
+docker compose -f docker-compose.dev.yml down
 ```
 
 ### Production
 
 ```bash
-docker compose --env-file .env.production -f docker-compose.yml up
+docker compose -f docker-compose.yml up
 ```
+
+**Note**: Make sure to create and configure a `.env.production` file for production deployments.
+
+## 🔍 Troubleshooting
+
+### Docker Compose environment variable errors
+
+If you see errors like `'${BACKEND_PORT}' is not a valid integer` or variables not being set:
+
+1. Ensure you have created a `.env` file (not just `.env.development`):
+   ```bash
+   cp .env.example .env
+   ```
+
+2. If you previously built containers with incorrect configuration, rebuild them:
+   ```bash
+   docker compose -f docker-compose.dev.yml down
+   docker compose -f docker-compose.dev.yml up --build
+   ```
+
+### Frontend dependency conflicts
+
+If you encounter ESLint or dependency version conflicts:
+
+- The `eslint-config-next` version should match your Next.js version
+- Check `frontend/package.json` and ensure version compatibility
+- Run `npm install` in the frontend directory to regenerate `package-lock.json`
 
 ## 📚 Additional Resources
 

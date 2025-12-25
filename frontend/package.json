@@ -13,7 +13,7 @@
     "@chakra-ui/react": "^3.30.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
-    "framer-motion": "^11.5.4",
+    "framer-motion": "^12.23.26",
     "next": "^15.5.9",
     "react": "^19",
     "react-dom": "^19",

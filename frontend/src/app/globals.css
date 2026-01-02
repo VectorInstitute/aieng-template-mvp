@@ -1,6 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --color-vector-pink: #eb088a;
+  --color-vector-purple: #8a08eb;
+}
 
 :root {
   --foreground-rgb: 0, 0, 0;

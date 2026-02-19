@@ -842,7 +842,7 @@ wheels = [
 
 [[package]]
 name = "mkdocstrings"
-version = "1.0.1"
+version = "1.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jinja2" },
@@ -852,9 +852,9 @@ dependencies = [
     { name = "mkdocs-autorefs" },
     { name = "pymdown-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bd/ec/680e3bc7c88704d3fb9c658a517ec10f2f2aed3b9340136978675e581688/mkdocstrings-1.0.1.tar.gz", hash = "sha256:caa7d311c85ac0a0674831725ecfdeee4348e3b8a2c91ab193ee319a41dbeb3d", size = 100794, upload-time = "2026-01-19T11:36:24.429Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/62/0dfc5719514115bf1781f44b1d7f2a0923fcc01e9c5d7990e48a05c9ae5d/mkdocstrings-1.0.3.tar.gz", hash = "sha256:ab670f55040722b49bb45865b2e93b824450fb4aef638b00d7acb493a9020434", size = 100946, upload-time = "2026-02-07T14:31:40.973Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/f9/ecd3e5cf258d63eddc13e354bd090df3aa458b64be50d737d52a8ad9df22/mkdocstrings-1.0.1-py3-none-any.whl", hash = "sha256:10deb908e310e6d427a5b8f69026361dac06b77de860f46043043e26f121db02", size = 35245, upload-time = "2026-01-19T11:36:23.067Z" },
+    { url = "https://files.pythonhosted.org/packages/04/41/1cf02e3df279d2dd846a1bf235a928254eba9006dd22b4a14caa71aed0f7/mkdocstrings-1.0.3-py3-none-any.whl", hash = "sha256:0d66d18430c2201dc7fe85134277382baaa15e6b30979f3f3bdbabd6dbdb6046", size = 35523, upload-time = "2026-02-07T14:31:39.27Z" },
 ]
 
 [[package]]

@@ -26,11 +26,11 @@ env:
   PROJECT_ID:         ${{ secrets.GCP_PROJECT_ID }}
   REGION:             us-east4          # GCP region with L4 GPU quota
   GAR_LOCATION:       us-east4          # Artifact Registry location (same region)
-  REPOSITORY:         my-project        # Artifact Registry Docker repository name
+  REPOSITORY:         aieng-template-cloudrun-vllm        # Artifact Registry Docker repository name
 
   # ── Service names ─────────────────────────────────────────────────────────
-  DEMO_SERVICE:       my-project-demo   # Cloud Run CPU service (UI + proxy)
-  VLLM_SERVICE:       my-project-vllm   # Cloud Run GPU service (vLLM inference)
+  DEMO_SERVICE:       aieng-template-cloudrun-vllm-demo   # Cloud Run CPU service (UI + proxy)
+  VLLM_SERVICE:       aieng-template-cloudrun-vllm-vllm   # Cloud Run GPU service (vLLM inference)
 
   # ── Model ─────────────────────────────────────────────────────────────────
   MODEL_ID:           Qwen/Qwen2.5-3B-Instruct           # HuggingFace model ID

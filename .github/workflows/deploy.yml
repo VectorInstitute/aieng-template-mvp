@@ -223,6 +223,16 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v3
 
+      - name: Ensure model cache bucket exists
+        run: |
+          gcloud storage buckets describe gs://${{ env.MODEL_CACHE_BUCKET }} \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null \
+          || gcloud storage buckets create gs://${{ env.MODEL_CACHE_BUCKET }} \
+            --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --quiet
+          echo "✓ Model cache bucket gs://${{ env.MODEL_CACHE_BUCKET }} is ready"
+
       - name: Deploy vLLM to Cloud Run GPU
         id: deploy
         run: |
@@ -246,7 +256,7 @@ jobs:
             --allow-unauthenticated \
             --add-volume=name=hf-cache,type=cloud-storage,bucket=${{ env.MODEL_CACHE_BUCKET }} \
             --add-volume-mount=volume=hf-cache,mount-path=/hf-cache \
-            --startup-probe=httpGet.path=/health,initialDelaySeconds=30,failureThreshold=80,periodSeconds=15,timeoutSeconds=5 \
+            --startup-probe=httpGet.path=/health,initialDelaySeconds=30,failureThreshold=120,periodSeconds=15,timeoutSeconds=5 \
             --set-env-vars="HF_HOME=/hf-cache,VLLM_CACHE_ROOT=/hf-cache/vllm_cache,TOKENIZERS_PARALLELISM=false,HF_TOKEN=${{ secrets.HF_TOKEN }},HF_HUB_DISABLE_XET=1" \
             --quiet
 

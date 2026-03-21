@@ -291,15 +291,23 @@ jobs:
             --project=${{ env.PROJECT_ID }} \
             --format='value(status.url)' 2>/dev/null || echo "")
           if [ -z "$URL" ]; then
-            echo "::error::vLLM service '${{ env.VLLM_SERVICE }}' not found."
-            echo "::error::Run this workflow with workflow_dispatch to deploy both services."
-            exit 1
+            if [ "${{ needs.deploy-vllm.result }}" = "skipped" ]; then
+              echo "::warning::vLLM service '${{ env.VLLM_SERVICE }}' not found and vLLM deployment was skipped (no Dockerfile.vllm changes)."
+              echo "::warning::For the initial deployment, run this workflow via workflow_dispatch to deploy both services."
+              echo "ready=false" >> $GITHUB_OUTPUT
+            else
+              echo "::error::vLLM service '${{ env.VLLM_SERVICE }}' not found after deployment."
+              exit 1
+            fi
+          else
+            echo "url=$URL" >> $GITHUB_OUTPUT
+            echo "ready=true" >> $GITHUB_OUTPUT
+            echo "✓ vLLM URL: $URL"
           fi
-          echo "url=$URL" >> $GITHUB_OUTPUT
-          echo "✓ vLLM URL: $URL"
 
       - name: Deploy demo to Cloud Run
         id: deploy
+        if: steps.vllm-url.outputs.ready == 'true'
         run: |
           IMAGE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.DEMO_SERVICE }}:${{ github.sha }}"
 
@@ -326,6 +334,7 @@ jobs:
           echo "✓ Demo deployed at $URL"
 
       - name: Health check
+        if: steps.vllm-url.outputs.ready == 'true'
         run: |
           URL="${{ steps.deploy.outputs.url }}/health"
           echo "Checking $URL..."

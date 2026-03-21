@@ -263,6 +263,18 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
 
+      - name: Ensure Artifact Registry repository exists
+        run: |
+          gcloud artifacts repositories describe ${{ env.REPOSITORY }} \
+            --location=${{ env.GAR_LOCATION }} --project=${{ env.PROJECT_ID }} \
+            --format="get(name)" 2>/dev/null \
+          || gcloud artifacts repositories create ${{ env.REPOSITORY }} \
+            --repository-format=docker \
+            --location=${{ env.GAR_LOCATION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --description="Docker images for ${{ env.REPOSITORY }}" \
+            --quiet
+
       - name: Build and push vLLM image
         uses: docker/build-push-action@v7
         with:

@@ -184,7 +184,7 @@ for ROLE in \
   roles/run.admin \
   roles/artifactregistry.writer \
   roles/iam.serviceAccountUser \
-  roles/storage.objectViewer; do
+  roles/storage.admin; do
   gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:$SA_EMAIL" --role=$ROLE
 done
@@ -192,17 +192,9 @@ done
 
 ### GCS bucket for model weight caching
 
-```bash
-gcloud storage buckets create gs://my-model-cache \
-  --project=$PROJECT_ID --location=US-EAST4
+The deployment workflow automatically creates the GCS bucket (set via `MODEL_CACHE_BUCKET` in `deploy.yml`) on first run — no manual step needed.
 
-# Allow the Cloud Run GPU service's runtime SA to read/write
-gcloud storage buckets add-iam-policy-binding gs://my-model-cache \
-  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
-  --role=roles/storage.objectAdmin
-```
-
-On first deploy, vLLM downloads weights from HuggingFace into the bucket. Subsequent cold starts read from GCS (~10s) instead of HuggingFace (~5-15min for 8B models).
+On first deploy, vLLM downloads weights from HuggingFace into the bucket. Subsequent cold starts read from GCS instead of HuggingFace, which is significantly faster.
 
 ---
 

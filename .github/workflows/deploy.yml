@@ -151,6 +151,75 @@ jobs:
           cache-from: type=gha,scope=demo
           cache-to: type=gha,mode=max,scope=demo
 
+  # ── Seed model weights into GCS cache ───────────────────────────────────────
+  #
+  # Downloads model weights from HuggingFace to the runner's local disk (/tmp)
+  # and uploads directly to GCS via gcloud storage cp — bypassing GCSFuse so
+  # large safetensor files upload via GCS multipart API instead of FUSE writes.
+  # Skipped if the model snapshot is already present in the bucket.
+  # Must complete before deploy-vllm so cold starts load from GCS, not HF.
+  seed-model-cache:
+    name: Seed Model Cache (GCS)
+    needs: [changes]
+    if: needs.changes.outputs.vllm == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Ensure model cache bucket exists
+        run: |
+          gcloud storage buckets describe gs://${{ env.MODEL_CACHE_BUCKET }} \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null \
+          || gcloud storage buckets create gs://${{ env.MODEL_CACHE_BUCKET }} \
+            --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --quiet
+          echo "✓ Bucket gs://${{ env.MODEL_CACHE_BUCKET }} is ready"
+
+      - name: Check if model is already cached
+        id: check-cache
+        run: |
+          MODEL_KEY="hub/models--$(echo '${{ env.MODEL_ID }}' | tr '/' '--')"
+          if gcloud storage ls "gs://${{ env.MODEL_CACHE_BUCKET }}/$MODEL_KEY/snapshots/" 2>/dev/null | grep -q .; then
+            echo "cached=true" >> $GITHUB_OUTPUT
+            echo "✓ Model already cached in GCS, skipping download"
+          else
+            echo "cached=false" >> $GITHUB_OUTPUT
+            echo "Model not cached — will download and seed"
+          fi
+
+      - name: Free up disk space
+        if: steps.check-cache.outputs.cached == 'false'
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          df -h /
+
+      - name: Download model to /tmp and upload to GCS
+        if: steps.check-cache.outputs.cached == 'false'
+        run: |
+          pip install -q "huggingface_hub[cli]"
+
+          # Download model weights to local disk (avoids GCSFuse write bottleneck)
+          export HF_HUB_DISABLE_XET=1
+          echo "Downloading ${{ env.MODEL_ID }} to /tmp/hf-home..."
+          HF_HOME=/tmp/hf-home huggingface-cli download ${{ env.MODEL_ID }} \
+            --token "${{ secrets.HF_TOKEN }}"
+
+          # Upload HF cache structure directly to GCS via multipart API (fast)
+          echo "Uploading to gs://${{ env.MODEL_CACHE_BUCKET }}/hub/ ..."
+          gcloud storage cp -r /tmp/hf-home/hub \
+            gs://${{ env.MODEL_CACHE_BUCKET }}/
+          echo "✓ Model seeded to gs://${{ env.MODEL_CACHE_BUCKET }}"
+
   # ── Build and push the vLLM server image ────────────────────────────────────
   build-vllm:
     name: Build vLLM Image
@@ -206,8 +275,8 @@ jobs:
   # from HuggingFace on every start.
   deploy-vllm:
     name: Deploy vLLM (Cloud Run GPU)
-    needs: [build-vllm]
-    if: needs.build-vllm.result == 'success'
+    needs: [build-vllm, seed-model-cache]
+    if: needs.build-vllm.result == 'success' && needs.seed-model-cache.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -222,16 +291,6 @@ jobs:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - uses: google-github-actions/setup-gcloud@v3
-
-      - name: Ensure model cache bucket exists
-        run: |
-          gcloud storage buckets describe gs://${{ env.MODEL_CACHE_BUCKET }} \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null \
-          || gcloud storage buckets create gs://${{ env.MODEL_CACHE_BUCKET }} \
-            --location=${{ env.REGION }} \
-            --project=${{ env.PROJECT_ID }} \
-            --quiet
-          echo "✓ Model cache bucket gs://${{ env.MODEL_CACHE_BUCKET }} is ready"
 
       - name: Deploy vLLM to Cloud Run GPU
         id: deploy

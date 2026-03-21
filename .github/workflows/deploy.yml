@@ -206,19 +206,27 @@ jobs:
       - name: Download model to /tmp and upload to GCS
         if: steps.check-cache.outputs.cached == 'false'
         run: |
-          pip install -q "huggingface_hub[cli]"
+          pip install -q huggingface_hub
 
           # Download model weights to local disk (avoids GCSFuse write bottleneck)
-          export HF_HUB_DISABLE_XET=1
           echo "Downloading ${{ env.MODEL_ID }} to /tmp/hf-home..."
-          HF_HOME=/tmp/hf-home huggingface-cli download ${{ env.MODEL_ID }} \
-            --token "${{ secrets.HF_TOKEN }}"
+          HF_HUB_DISABLE_XET=1 python3 - <<'EOF'
+          import os
+          from huggingface_hub import snapshot_download
+          snapshot_download(
+              "${{ env.MODEL_ID }}",
+              cache_dir="/tmp/hf-home/hub",
+              token=os.environ.get("HF_TOKEN") or None,
+          )
+          EOF
 
           # Upload HF cache structure directly to GCS via multipart API (fast)
           echo "Uploading to gs://${{ env.MODEL_CACHE_BUCKET }}/hub/ ..."
           gcloud storage cp -r /tmp/hf-home/hub \
             gs://${{ env.MODEL_CACHE_BUCKET }}/
           echo "✓ Model seeded to gs://${{ env.MODEL_CACHE_BUCKET }}"
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
   # ── Build and push the vLLM server image ────────────────────────────────────
   build-vllm:

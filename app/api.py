@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 
 # ── Configuration (set via Cloud Run environment variables) ─────────────────
-VLLM_BASE_URL  = os.environ.get("VLLM_BASE_URL")           # e.g. https://…/v1
+VLLM_BASE_URL = os.environ.get("VLLM_BASE_URL")  # e.g. https://…/v1
 VLLM_MODEL_NAME = os.environ.get("VLLM_MODEL_NAME", "my-model")
 MAX_INPUT_CHARS = int(os.environ.get("MAX_INPUT_CHARS", "2000"))
 
@@ -31,10 +31,7 @@ DEMO_DIR = Path(__file__).parent / "demo"
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Initialise the vLLM client on startup."""
     if not VLLM_BASE_URL:
-        raise RuntimeError(
-            "VLLM_BASE_URL is not set. "
-            "Set it to the /v1 URL of your vLLM Cloud Run service."
-        )
+        raise RuntimeError("VLLM_BASE_URL is not set. Set it to the /v1 URL of your vLLM Cloud Run service.")
     app.state.client = OpenAI(base_url=VLLM_BASE_URL, api_key="EMPTY")
     print(f"Connected to vLLM at {VLLM_BASE_URL} (model: {VLLM_MODEL_NAME})")
     yield
@@ -82,9 +79,7 @@ def health(request: Request) -> HealthResponse:
     """Check if the server and vLLM client are ready."""
     client = getattr(request.app.state, "client", None)
     if client is not None:
-        return HealthResponse(
-            status="ok", model=f"{VLLM_MODEL_NAME} @ {VLLM_BASE_URL}"
-        )
+        return HealthResponse(status="ok", model=f"{VLLM_MODEL_NAME} @ {VLLM_BASE_URL}")
     return HealthResponse(status="starting", model="not connected")
 
 

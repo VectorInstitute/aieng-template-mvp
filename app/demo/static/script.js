@@ -64,7 +64,10 @@ async function runGenerate(prompt) {
     }
   } catch (err) {
     const status = err && err.status;
-    if ((status === 502 || status === 503) && coldStartRetries < MAX_COLD_START_RETRIES) {
+    if (status === 429) {
+      setLoading(false);
+      showError("Rate limit reached — please wait a moment before trying again.");
+    } else if ((status === 502 || status === 503) && coldStartRetries < MAX_COLD_START_RETRIES) {
       coldStartRetries++;
       let secs = 5;
       const countdown = setInterval(() => {

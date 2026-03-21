@@ -169,6 +169,14 @@ Add these GitHub Actions secrets:
 - `GCP_WORKLOAD_IDENTITY_PROVIDER`: `projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider`
 - `GCP_SERVICE_ACCOUNT`: `$SA_EMAIL`
 
+> **Reusing an existing WIF pool?** If the pool and service account already exist (e.g. from another repo in the same GCP project), skip the creation steps above and just grant the new repo permission to impersonate the SA:
+> ```bash
+> gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
+>   --project=$PROJECT_ID \
+>   --role=roles/iam.workloadIdentityUser \
+>   --member="principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/YOUR_ORG/YOUR_REPO"
+> ```
+
 ### Required IAM roles for the deploy service account
 
 ```bash

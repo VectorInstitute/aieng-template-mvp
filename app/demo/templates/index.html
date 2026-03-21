@@ -3,43 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>vLLM Demo</title>
+  <title>vLLM Demo | Vector Institute</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>vLLM Demo</h1>
-      <p class="subtitle">Powered by a Cloud Run GPU service</p>
-    </header>
 
-    <main>
-      <div id="error-banner" class="error-banner hidden"></div>
+  <div class="noise"></div>
 
-      <section class="input-section">
-        <label for="prompt-input">Prompt</label>
-        <textarea
-          id="prompt-input"
-          placeholder="Enter your prompt here…"
-          rows="6"
-          maxlength="2000"
-        ></textarea>
-        <div class="char-count"><span id="char-count">0</span> / 2000</div>
-        <button id="submit-btn" type="button">Generate</button>
-      </section>
+  <header>
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-v">v</span><span class="logo-llm">LLM</span><span class="logo-demo"> Demo</span>
+      </div>
+      <span class="logo-tagline">Powered by a Cloud Run GPU service</span>
+    </div>
+    <img
+      src="/static/vector-logo.png"
+      alt="Vector Institute"
+      class="vector-logo"
+    />
+  </header>
 
-      <section id="result-section" class="result-section hidden">
-        <div id="loading-state" class="loading-state hidden">
-          <div class="spinner"></div>
-          <p id="loading-msg">Generating…</p>
+  <main>
+
+    <div id="error-banner" class="error-banner hidden"></div>
+
+    <!-- INPUT -->
+    <section class="input-section">
+      <div class="section-label">
+        <span class="label-num">01</span>
+        <span class="label-text">Enter your prompt</span>
+      </div>
+      <textarea
+        id="prompt-input"
+        placeholder="Ask anything…"
+        spellcheck="false"
+        maxlength="2000"
+      ></textarea>
+      <div class="input-footer">
+        <span class="char-count"><span id="char-count">0</span> / 2000</span>
+        <button id="submit-btn" type="button" class="generate-btn">
+          <span class="btn-text">Generate</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="result-section" class="result-section hidden">
+
+      <div id="loading-state" class="loading hidden">
+        <div class="loading-bar">
+          <div class="loading-fill"></div>
         </div>
-        <div id="output-container" class="output-container hidden">
-          <h2>Response</h2>
-          <div id="output-text" class="output-text"></div>
+        <p id="loading-msg" class="loading-label">Generating…</p>
+      </div>
+
+      <div id="output-container" class="output-panel hidden">
+        <div class="section-label">
+          <span class="label-num">02</span>
+          <span class="label-text">Response</span>
         </div>
-      </section>
-    </main>
-  </div>
+        <div id="output-text" class="output-text"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="site-footer">Copyright &copy; 2026, Vector AI Engineering</footer>
 
   <script src="/static/script.js"></script>
 </body>

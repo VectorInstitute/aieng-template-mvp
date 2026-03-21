@@ -247,7 +247,7 @@ jobs:
             --add-volume=name=hf-cache,type=cloud-storage,bucket=${{ env.MODEL_CACHE_BUCKET }} \
             --add-volume-mount=volume=hf-cache,mount-path=/hf-cache \
             --startup-probe=httpGet.path=/health,initialDelaySeconds=30,failureThreshold=80,periodSeconds=15,timeoutSeconds=5 \
-            --set-env-vars="HF_HOME=/hf-cache,VLLM_CACHE_ROOT=/hf-cache/vllm_cache,TOKENIZERS_PARALLELISM=false,HF_TOKEN=${{ secrets.HF_TOKEN }}" \
+            --set-env-vars="HF_HOME=/hf-cache,VLLM_CACHE_ROOT=/hf-cache/vllm_cache,TOKENIZERS_PARALLELISM=false,HF_TOKEN=${{ secrets.HF_TOKEN }},HF_HUB_DISABLE_XET=1" \
             --quiet
 
           URL=$(gcloud run services describe ${{ env.VLLM_SERVICE }} \

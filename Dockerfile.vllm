@@ -32,12 +32,12 @@ EXPOSE 8080
 #
 # For gated models (e.g. Llama 3), pass --hf-token via env var in deploy.yml.
 CMD [ \
-    "meta-llama/Llama-3.1-8B-Instruct", \
-    "--served-model-name", "my-model", \
+    "Qwen/Qwen2.5-3B-Instruct", \
+    "--served-model-name", "qwen2.5-3b-instruct", \
     "--port", "8080", \
     "--host", "0.0.0.0", \
     "--max-model-len", "8192", \
-    "--max-num-seqs", "16", \
+    "--max-num-seqs", "32", \
     "--dtype", "bfloat16", \
     "--enable-chunked-prefill" \
 ]

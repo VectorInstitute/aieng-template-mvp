@@ -33,13 +33,13 @@ env:
   VLLM_SERVICE:       my-project-vllm   # Cloud Run GPU service (vLLM inference)
 
   # ── Model ─────────────────────────────────────────────────────────────────
-  MODEL_ID:           meta-llama/Llama-3.1-8B-Instruct   # HuggingFace model ID
-  MODEL_SERVED_NAME:  my-model          # Name exposed by the vLLM /v1/models API
-  MODEL_CACHE_BUCKET: my-project-model-cache             # GCS bucket for HF weights
+  MODEL_ID:           Qwen/Qwen2.5-3B-Instruct           # HuggingFace model ID
+  MODEL_SERVED_NAME:  qwen2.5-3b-instruct              # Name exposed by the vLLM /v1/models API
+  MODEL_CACHE_BUCKET: aieng-template-cloudrun-vllm       # GCS bucket for HF weights
 
   # ── vLLM inference settings ───────────────────────────────────────────────
   MAX_MODEL_LEN:      8192   # context window (tokens)
-  MAX_NUM_SEQS:       16     # max concurrent sequences (L4 sweet spot for 8B)
+  MAX_NUM_SEQS:       32     # max concurrent sequences (L4 sweet spot for 3B)
   DTYPE:              bfloat16
 
   # ── Demo app settings ─────────────────────────────────────────────────────

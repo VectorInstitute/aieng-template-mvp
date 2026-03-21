@@ -40,5 +40,6 @@ CMD [ \
     "--max-model-len", "8192", \
     "--max-num-seqs", "32", \
     "--dtype", "bfloat16", \
-    "--enable-chunked-prefill" \
+    "--enable-chunked-prefill", \
+    "--enforce-eager" \
 ]

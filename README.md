@@ -1,168 +1,244 @@
-# AI Engineering MVP Template
+# GCP Cloud Run vLLM Template
 
-This template repository helps you quickly bootstrap MVP applications with a
-professional, production-ready foundation.
+A production-ready template for deploying an LLM-backed application on **Google Cloud Run** using [vLLM](https://docs.vllm.ai) as the inference backend.
 
-## ✨ Why Use This Template?
+The template ships two Cloud Run services:
 
-- **Save time**: Skip boilerplate configuration and start building immediately
-- **Best practices**: Follows industry standards for Docker, CI/CD, and application architecture
-- **Flexibility**: Easily customize while maintaining a solid foundation
-- **Full-stack**: Includes both frontend (Next.js) and backend (FastAPI) with proper integration
+| Service | Runtime | Purpose |
+|---------|---------|---------|
+| **vLLM GPU service** | NVIDIA L4 GPU | OpenAI-compatible inference (`/v1`) |
+| **Demo CPU service** | CPU (nginx + FastAPI) | Web UI + API proxy |
 
-## 🚀 Getting Started
+The UI is served by nginx instantly on cold start; the FastAPI/uvicorn process loads in the background and handles API calls once ready. The frontend auto-retries 502 responses during the warm-up window.
 
-### Using This Template
+---
 
-1. Click the "Use this template" button at the top of this repository
-2. Name your new repository and create it
-3. Clone your new repository locally
-4. Customize according to your project needs (see Customization Guide below)
-
-### Prerequisites
-
-- Docker & Docker Compose (v20.10.0+)
-- Python (3.11+)
-- Node.js (18.0.0+)
-
-## 🏗️ What's Included
-
-### Architecture
-
-- **Frontend**: Next.js with TypeScript, ready for modern UI development
-- **Backend**: FastAPI for building high-performance APIs
-- **Docker**: Development and production configurations
-- **Environment Management**: Properly separated dev/prod environments
-
-### Directory Structure
+## Architecture
 
 ```
-/
-├── frontend/                # Next.js frontend application
-│   ├── src/
-│   │   ├── app/             # Next.js App Router
-│   │   │   ├── components/  # React components
-│   │   │   ├── stores/      # State management
-│   │   │   └── types/       # TypeScript type definitions
-│   ├── Dockerfile           # Production Docker configuration
-│   └── Dockerfile.dev       # Development Docker configuration
-│
-├── backend/                 # FastAPI backend application
-│   ├── api/                 # API endpoints and configuration
-│   ├── services/            # Business logic and services
-│   ├── Dockerfile           # Production Docker configuration
-│   └── Dockerfile.dev       # Development Docker configuration
-│
-├── scripts/                 # Utility scripts for setup/management
-├── docs/                    # Documentation
-│   └── assets/              # Images and other documentation assets
-│
-├── docker-compose.yml       # Production Docker Compose configuration
-├── docker-compose.dev.yml   # Development Docker Compose configuration
-└── .env.example             # Example environment variables
+User
+ │
+ ▼
+Cloud Run CPU service (port 8080)
+ ├── nginx — serves /  and /static/ instantly from filesystem
+ └── uvicorn (port 8000, background) — /health  /generate  /generate/stream
+                          │
+                          │  OpenAI-compatible HTTP
+                          ▼
+              Cloud Run GPU service (vLLM, port 8080)
+                          │
+                          │  GCS FUSE volume
+                          ▼
+               GCS bucket (cached model weights)
 ```
 
-## 🔧 Customization Guide
+---
 
-### 1. Configure Environment Variables
+## Prerequisites
 
-Copy the `.env.example` file to both `.env.development` and `.env`:
+- **GCP project** with billing enabled
+- `gcloud` CLI authenticated (`gcloud auth login`)
+- **Artifact Registry** repository for Docker images
+- **Workload Identity Federation** pool and provider for keyless GitHub Actions auth
+- A **GCS bucket** for caching model weights (optional but strongly recommended)
+- GPU quota for NVIDIA L4 in your chosen region (request via IAM & Admin → Quotas)
+
+---
+
+## Quick Start
+
+### 1. Fork / clone this repository
 
 ```bash
-cp .env.example .env.development
-cp .env.example .env
+git clone https://github.com/your-org/your-repo
+cd your-repo
 ```
 
-The `.env` file is used by Docker Compose for variable substitution in the compose files. The `.env.development` file can be used for any additional environment-specific configuration.
+### 2. Configure GitHub Actions secrets & variables
 
-Edit these files to add your specific API keys and configuration.
+In your repository's **Settings → Secrets and variables → Actions**, set:
 
-### 2. Update Project Information
+**Secrets**
+| Name | Value |
+|------|-------|
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | Full WIF provider resource name |
+| `GCP_SERVICE_ACCOUNT` | Service account email used for deployments |
+| `HF_TOKEN` | HuggingFace token (required for gated models like Llama 3) |
 
-- Update this README.md with your project details
-- Modify the package.json and pyproject.toml with your project name/details
+**Variables** (or edit defaults at the top of `.github/workflows/deploy.yml`)
+| Name | Example |
+|------|---------|
+| `GCP_PROJECT_ID` | `my-gcp-project` |
+| `GCP_REGION` | `us-east4` |
+| `ARTIFACT_REGISTRY_REPO` | `us-east4-docker.pkg.dev/my-project/my-repo` |
+| `VLLM_SERVICE_NAME` | `my-vllm-service` |
+| `DEMO_SERVICE_NAME` | `my-demo-service` |
+| `GCS_BUCKET` | `gs://my-model-cache` |
+| `VLLM_MODEL_NAME` | `my-model` |
 
-### 3. Extend the Backend
+### 3. Customise the model
 
-The backend is organized to make extension easy:
-- Add new endpoints in `backend/api/routes.py`
-- Create new services in `backend/services/`
-- Configure API settings in `backend/api/config.py`
+Edit `Dockerfile.vllm` — change the model ID and serving flags:
 
-### 4. Customize the Frontend
+```dockerfile
+CMD [ \
+    "meta-llama/Llama-3.1-8B-Instruct", \   # ← HuggingFace model ID
+    "--served-model-name", "my-model", \     # ← must match VLLM_MODEL_NAME
+    "--max-model-len", "8192", \
+    "--max-num-seqs", "16", \
+    "--dtype", "bfloat16" \
+]
+```
 
-The frontend uses Next.js App Router architecture:
-- Add components in `frontend/src/app/components/`
-- Create new pages by adding folders to `frontend/src/app/`
-- Define types in `frontend/src/app/types/`
-- Manage state with Zustand in `frontend/src/app/stores/`
+The `--served-model-name` value must match the `VLLM_MODEL_NAME` variable and the `VLLM_MODEL_NAME` env var set on the demo service.
 
-## 🚢 Running the Application
+### 4. Customise the demo app
 
-### Development
+Replace the `/generate` and `/generate/stream` endpoint logic in `app/api.py` with your use case — parse model output, apply post-processing, add system prompts, etc.
 
-Start the development environment:
+The frontend files live in `app/demo/`:
+- `templates/index.html` — page structure
+- `static/style.css` — styling
+- `static/script.js` — SSE streaming + cold-start auto-retry
+
+### 5. Deploy
+
+Push to `main` to trigger the full deploy workflow, or run it manually from **Actions → Deploy to Cloud Run**.
+
+The workflow:
+1. Builds and pushes both Docker images to Artifact Registry
+2. Deploys the vLLM GPU service (waits for health check)
+3. Passes the vLLM service URL to the demo service as `VLLM_BASE_URL`
+4. Deploys the demo CPU service
+
+---
+
+## Local Development
 
 ```bash
-docker compose -f docker-compose.dev.yml up
+# Install dependencies
+uv sync --dev
+
+# Run the API server (requires VLLM_BASE_URL to point at a running vLLM instance)
+VLLM_BASE_URL=http://localhost:9999/v1 uv run uvicorn app.api:app --reload --port 8000
+
+# Lint & format
+uv run ruff check . --fix
+uv run ruff format .
+
+# Type check
+uv run mypy app/
+
+# Tests
+uv run pytest
 ```
 
-Or rebuild containers (needed after dependency changes):
+---
+
+## Infrastructure Setup Reference
+
+### Workload Identity Federation (keyless auth for GitHub Actions)
 
 ```bash
-docker compose -f docker-compose.dev.yml up --build
+PROJECT_ID=my-gcp-project
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+REPO=your-org/your-repo
+
+# Create the WIF pool
+gcloud iam workload-identity-pools create github-pool \
+  --project=$PROJECT_ID --location=global \
+  --display-name="GitHub Actions pool"
+
+# Create the provider
+gcloud iam workload-identity-pools providers create-oidc github-provider \
+  --project=$PROJECT_ID --location=global \
+  --workload-identity-pool=github-pool \
+  --display-name="GitHub provider" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --issuer-uri="https://token.actions.githubusercontent.com"
+
+# Allow your repo to impersonate the deploy service account
+SA_EMAIL=deploy-sa@$PROJECT_ID.iam.gserviceaccount.com
+gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
+  --project=$PROJECT_ID \
+  --role=roles/iam.workloadIdentityUser \
+  --member="principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/$REPO"
 ```
 
-The application will be available at:
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
-- Backend API docs: http://localhost:8000/docs
+Add these GitHub Actions secrets:
+- `GCP_WORKLOAD_IDENTITY_PROVIDER`: `projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider`
+- `GCP_SERVICE_ACCOUNT`: `$SA_EMAIL`
 
-To stop the containers:
+### Required IAM roles for the deploy service account
 
 ```bash
-docker compose -f docker-compose.dev.yml down
+for ROLE in \
+  roles/run.admin \
+  roles/artifactregistry.writer \
+  roles/iam.serviceAccountUser \
+  roles/storage.objectViewer; do
+  gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SA_EMAIL" --role=$ROLE
+done
 ```
 
-### Production
+### GCS bucket for model weight caching
 
 ```bash
-docker compose -f docker-compose.yml up
+gcloud storage buckets create gs://my-model-cache \
+  --project=$PROJECT_ID --location=US-EAST4
+
+# Allow the Cloud Run GPU service's runtime SA to read/write
+gcloud storage buckets add-iam-policy-binding gs://my-model-cache \
+  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role=roles/storage.objectAdmin
 ```
 
-**Note**: Make sure to create and configure a `.env.production` file for production deployments.
+On first deploy, vLLM downloads weights from HuggingFace into the bucket. Subsequent cold starts read from GCS (~10s) instead of HuggingFace (~5-15min for 8B models).
 
-## 🔍 Troubleshooting
+---
 
-### Docker Compose environment variable errors
+## Key Design Decisions
 
-If you see errors like `'${BACKEND_PORT}' is not a valid integer` or variables not being set:
+### Why nginx in front of uvicorn?
 
-1. Ensure you have created a `.env` file (not just `.env.development`):
-   ```bash
-   cp .env.example .env
-   ```
+Cloud Run performs a TCP health check against port 8080. If the check passes before Python finishes importing heavy ML libraries (~20-30s), the container enters "serving" mode and the CPU is throttled between requests — starving the background import process and turning a 30s startup into 2+ minutes.
 
-2. If you previously built containers with incorrect configuration, rebuild them:
-   ```bash
-   docker compose -f docker-compose.dev.yml down
-   docker compose -f docker-compose.dev.yml up --build
-   ```
+nginx answers the TCP probe in <1s and serves the static UI immediately. The `--no-cpu-throttling` flag (set in the deploy workflow) ensures the background Python process always has CPU.
 
-### Frontend dependency conflicts
+### Why `--no-cpu-throttling`?
 
-If you encounter ESLint or dependency version conflicts:
+Without it, Cloud Run throttles CPU to near-zero between requests. After nginx answers the health check, the Python background process receives almost no CPU time until the first real request arrives — by which point the user has already seen a 502.
 
-- The `eslint-config-next` version should match your Next.js version
-- Check `frontend/package.json` and ensure version compatibility
-- Run `npm install` in the frontend directory to regenerate `package-lock.json`
+### SSE streaming
 
-## 📚 Additional Resources
+The `/generate/stream` endpoint uses Server-Sent Events. nginx is configured with `proxy_buffering off` and `proxy_cache off` to prevent it from buffering the stream. The frontend accumulates tokens into the output box as they arrive.
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [Docker Documentation](https://docs.docker.com/)
+---
 
-## 📝 License
+## File Reference
 
-This template is released under the Apache-2.0 License. See the LICENSE file for details.
+```
+.
+├── app/
+│   ├── __init__.py
+│   ├── api.py                  # FastAPI app — customise /generate logic here
+│   └── demo/
+│       ├── templates/
+│       │   └── index.html      # Demo UI
+│       └── static/
+│           ├── style.css
+│           └── script.js       # SSE client + cold-start retry
+├── tests/
+│   └── test_api.py
+├── .github/
+│   └── workflows/
+│       ├── deploy.yml          # Two-service Cloud Run deploy
+│       └── ci.yml              # Lint / type-check / test
+├── Dockerfile                  # Demo CPU service
+├── Dockerfile.vllm             # vLLM GPU service
+├── nginx.conf                  # nginx config (serves UI, proxies API)
+├── entrypoint.sh               # Starts uvicorn in background, then nginx
+├── pyproject.toml
+└── .env.example
+```

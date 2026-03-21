@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vLLM Demo</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>vLLM Demo</h1>
+      <p class="subtitle">Powered by a Cloud Run GPU service</p>
+    </header>
+
+    <main>
+      <div id="error-banner" class="error-banner hidden"></div>
+
+      <section class="input-section">
+        <label for="prompt-input">Prompt</label>
+        <textarea
+          id="prompt-input"
+          placeholder="Enter your prompt here…"
+          rows="6"
+          maxlength="2000"
+        ></textarea>
+        <div class="char-count"><span id="char-count">0</span> / 2000</div>
+        <button id="submit-btn" type="button">Generate</button>
+      </section>
+
+      <section id="result-section" class="result-section hidden">
+        <div id="loading-state" class="loading-state hidden">
+          <div class="spinner"></div>
+          <p id="loading-msg">Generating…</p>
+        </div>
+        <div id="output-container" class="output-container hidden">
+          <h2>Response</h2>
+          <div id="output-text" class="output-text"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+# ============================================================
+# vLLM Inference Server — Cloud Run GPU Service
+# Base: vllm/vllm-openai (OpenAI-compatible API)
+# GPU: NVIDIA L4 (23 GB VRAM — fits most 7-8B models in BF16)
+#
+# Exposes an OpenAI-compatible API at /v1.
+# Model weights are loaded from GCS (mounted at /hf-cache) so
+# cold starts use cached weights instead of re-downloading.
+# ============================================================
+FROM vllm/vllm-openai:latest
+
+# Cache paths — GCS bucket is mounted at /hf-cache at runtime via
+# --add-volume in gcloud run deploy (see deploy.yml).
+ENV HF_HOME=/hf-cache
+ENV VLLM_CACHE_ROOT=/hf-cache/vllm_cache
+ENV TOKENIZERS_PARALLELISM=false
+ENV VLLM_WORKER_MULTIPROC_METHOD=spawn
+
+ENV PORT=8080
+EXPOSE 8080
+
+# ── Customize the CMD for your model ─────────────────────────────────────────
+# vllm/vllm-openai ENTRYPOINT is: vllm serve
+# First positional arg is the HuggingFace model ID.
+#
+# Key flags to tune:
+#   --served-model-name   name exposed by /v1/models (must match VLLM_MODEL_NAME in demo)
+#   --max-model-len       context window in tokens
+#   --max-num-seqs        max concurrent in-flight sequences (L4 sweet spot ~16 for 8B)
+#   --dtype               bfloat16 for Llama/Qwen/Mistral; float16 for older models
+#   --tensor-parallel-size  use >1 for multi-GPU (not needed for L4 single-GPU)
+#
+# For gated models (e.g. Llama 3), pass --hf-token via env var in deploy.yml.
+CMD [ \
+    "meta-llama/Llama-3.1-8B-Instruct", \
+    "--served-model-name", "my-model", \
+    "--port", "8080", \
+    "--host", "0.0.0.0", \
+    "--max-model-len", "8192", \
+    "--max-num-seqs", "16", \
+    "--dtype", "bfloat16", \
+    "--enable-chunked-prefill" \
+]

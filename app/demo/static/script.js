@@ -57,6 +57,7 @@ async function runGenerate(prompt) {
   try {
     await streamGenerate(prompt);
     coldStartRetries = 0;
+    submitBtn.disabled = false;
 
     const elapsed = (Date.now() - started) / 1000;
     if (elapsed > 8) {
@@ -101,7 +102,7 @@ async function streamGenerate(prompt) {
   }
 
   outputContainer.classList.remove("hidden");
-  setLoading(false);
+  loadingState.classList.add("hidden");  // hide spinner; button stays disabled until stream ends
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
